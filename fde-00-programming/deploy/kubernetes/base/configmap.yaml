@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fde-00-programming-config
-data:
-  SERVICE_NAME: fde-00-programming
-  ENVIRONMENT: k8s
-  LOG_LEVEL: INFO
