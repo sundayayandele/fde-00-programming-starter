@@ -1,0 +1,48 @@
+# Scheduled CFPB pull: the same image, running the CLI instead of the API.
+# Run it now:  kubectl -n fde create job ingest-now --from=cronjob/fde-00-programming-ingest
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fde-00-programming-ingest
+spec:
+  schedule: "15 6 * * *"            # daily 06:15 UTC; CFPB publishes new complaints daily
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: fde-00-programming-ingest
+        spec:
+          restartPolicy: Never
+          serviceAccountName: fde-00-programming
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile: {type: RuntimeDefault}
+          containers:
+            - name: ingest
+              image: fde-00-programming:local
+              imagePullPolicy: IfNotPresent
+              command: ["complaints-ingest", "ingest-api", "--days", "2", "--limit", "5000"]
+              envFrom:
+                - configMapRef: {name: fde-00-programming-config}
+                - secretRef: {name: fde-00-programming-db}
+              resources:
+                requests: {cpu: 100m, memory: 128Mi}
+                limits: {cpu: 500m, memory: 512Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: [ALL]}
+              volumeMounts:
+                - {name: tmp, mountPath: /tmp}
+          volumes:
+            - name: tmp
+              emptyDir: {}

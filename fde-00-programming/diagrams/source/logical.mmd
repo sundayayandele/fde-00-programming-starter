@@ -1,0 +1,14 @@
+%% Logical view: components and data flow, independent of technology.
+flowchart LR
+  api_src[CFPB search API] --> reader[Source readers]
+  csv_src[CFPB bulk CSV] --> reader
+  reader --> clean[Clean: normalise, parse, mask PII, validate]
+  clean -->|valid| upsert[Upsert by complaint_id]
+  clean -->|rejected + reason| quality[Quality tracker]
+  upsert --> store[(complaints)]
+  clean --> quality
+  quality --> runs[(ingest_runs)]
+  store --> reports[Reports]
+  runs --> reports
+  reports --> http[Report API]
+  http --> metrics[Metrics and alerts]

@@ -1,0 +1,6 @@
+Date received,Product,Sub-product,Issue,Sub-issue,Consumer complaint narrative,Company public response,Company,State,ZIP code,Tags,Consumer consent provided?,Submitted via,Date sent to company,Company response to consumer,Timely response?,Consumer disputed?,Complaint ID
+09/05/26,Debt collection,I do not know,Attempts to collect debt not owed,Debt is not yours,"The collector called me about a debt that is not mine. My account 123456789012 was never with them.",,Example Collections,FL,331XX,Servicemember,Consent provided,Web,09/05/26,Closed with explanation,Yes,N/A,8800101
+2026-09-06,Mortgage,Conventional home mortgage,Trouble during payment process,,,,Example Mortgage,CA,94110,,Consent not provided,Phone,2026-09-07,Closed with monetary relief,Yes,N/A,8800102
+09/07/2026,Student loan,Federal student loan servicing,Dealing with your lender or servicer,,,,Example Servicer,OH,43004,,N/A,Web,09/08/2026,In progress,No,N/A,8800103
+09/08/26,,,,,,,Missing Product Co,GA,30301,,N/A,Web,09/08/26,In progress,Yes,N/A,8800104
+09/05/26,Debt collection,I do not know,Attempts to collect debt not owed,Debt is not yours,"Updated: the collector called again.",,Example Collections,FL,331XX,Servicemember,Consent provided,Web,09/05/26,Closed with explanation,Yes,N/A,8800101

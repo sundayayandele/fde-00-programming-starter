@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-12",
+  "version": "1.0.0",
+  "dataset": "synthetic seed=42 n=50000",
+  "database": "postgresql",
+  "batch_size": 1000,
+  "repeats": 3,
+  "insert_records_per_minute_median": 161805,
+  "upsert_records_per_minute_median": 163909,
+  "python": "3.13.16",
+  "machine": "Linux x86_64, 2 CPUs"
+}

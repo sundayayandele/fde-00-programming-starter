@@ -1,0 +1,18 @@
+%% Technical view: what runs where.
+flowchart TB
+  sched{Scheduler} -->|daily 06:15 UTC| job[Ingest container: complaints-ingest]
+  sched -.- k8scron[K8s CronJob]
+  sched -.- eb[AWS EventBridge Scheduler]
+  sched -.- caj[Azure Container Apps Job]
+  sched -.- cs[GCP Cloud Scheduler → Cloud Run job]
+  job -->|HTTPS| cfpb[(CFPB API)]
+  job -->|DATABASE_URL from secret store| db[(Postgres 16: StatefulSet / RDS / Flexible Server / Cloud SQL)]
+  user[User] -->|HTTPS| entry{Entry point}
+  entry -->|desktop| pf[127.0.0.1 port / port-forward]
+  entry -->|cloud| managed[Fargate public IP / Container Apps / Cloud Run URL]
+  entry -->|OpenShift| route[Route, edge TLS]
+  pf --> api[API pod: non-root, read-only FS]
+  managed --> api
+  route --> api
+  api --> db
+  api -->|/metrics/| prom[Prometheus] --> graf[Grafana]
