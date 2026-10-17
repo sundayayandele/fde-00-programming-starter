@@ -1,0 +1,33 @@
+# Shared desktop settings, reused by the docker-desktop, rancher-desktop and kind
+# overlays as a Kustomize Component: an in-cluster Postgres, one replica and gentle
+# autoscaling (desktop clusters have little headroom), and a CronJob that is
+# suspended so it does not pull CFPB data every day on a laptop. Run it on demand:
+#   kubectl -n fde create job ingest-now --from=cronjob/fde-00-programming-ingest
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - postgres.yaml
+patches:
+  - target: {kind: Deployment, name: fde-00-programming}
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target: {kind: HorizontalPodAutoscaler, name: fde-00-programming}
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+  - target: {kind: PodDisruptionBudget, name: fde-00-programming}
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 0
+  - target: {kind: CronJob, name: fde-00-programming-ingest}
+    patch: |-
+      - op: add
+        path: /spec/suspend
+        value: true

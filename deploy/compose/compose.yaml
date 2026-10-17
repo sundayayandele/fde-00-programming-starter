@@ -1,0 +1,116 @@
+# One Compose file for Docker Desktop, Rancher Desktop (dockerd/moby engine)
+# and Podman Desktop (`podman compose`). Paths are relative to this file.
+#
+#   make up-docker | make up-rancher | make up-podman-compose
+#   make ingest-docker ARGS="ingest-api --days 7"     # one-off ingest job
+#   docker compose -f deploy/compose/compose.yaml --profile observability up -d
+#
+# Services: db (Postgres 16, no host port), api (report API on 127.0.0.1:8000),
+# ingest (one-off job, profile `jobs`), prometheus and grafana (profile `observability`).
+# Secrets come from your shell environment (the Makefile loads .env first). The
+# default Postgres password is for a local, unexposed lab database only.
+name: fde-00-programming
+
+x-db-url: &db-url postgresql+psycopg://complaints:${POSTGRES_PASSWORD:-complaints-local}@db:5432/complaints
+
+services:
+  db:
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      POSTGRES_DB: complaints
+      POSTGRES_USER: complaints
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-complaints-local}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U complaints -d complaints"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: fde-00-programming:local
+    ports:
+      - "127.0.0.1:${HOST_PORT:-8000}:8000"   # local only; never bind 0.0.0.0 in labs
+    environment:
+      SERVICE_NAME: fde-00-programming
+      ENVIRONMENT: ${ENVIRONMENT:-local}
+      DATABASE_URL: *db-url
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  ingest:
+    profiles: [jobs]
+    image: fde-00-programming:local
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-local}
+      DATABASE_URL: *db-url
+    command: ["complaints-ingest", "ingest-api", "--days", "${INGEST_DAYS:-7}",
+              "--limit", "${INGEST_LIMIT:-5000}"]
+    volumes:
+      - ../../data:/data:ro                    # put a CFPB CSV sample here for ingest-csv
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+
+  prometheus:
+    profiles: [observability]
+    image: docker.io/prom/prometheus:v2.55.1
+    volumes:
+      - ../../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../../monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on: [api]
+
+  grafana:
+    profiles: [observability]
+    image: docker.io/grafana/grafana:11.3.0
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ../../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on: [prometheus]
+
+volumes:
+  pgdata:

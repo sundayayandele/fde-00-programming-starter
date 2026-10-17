@@ -1,0 +1,53 @@
+{{- if .Values.ingest.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "fde.fullname" . }}-ingest
+  labels:
+    {{- include "fde.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingest
+spec:
+  schedule: {{ .Values.ingest.schedule | quote }}
+  timeZone: {{ .Values.ingest.timeZone }}
+  suspend: {{ .Values.ingest.suspend }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: {{ .Values.ingest.activeDeadlineSeconds }}
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ include "fde.name" . }}-ingest
+            app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: ingest
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command: ["complaints-ingest"]
+              args:
+                {{- toYaml .Values.ingest.args | nindent 16 }}
+              envFrom:
+                - configMapRef:
+                    name: {{ include "fde.fullname" . }}
+                - secretRef:
+                    name: {{ required "database.existingSecret is required" .Values.database.existingSecret }}
+              resources:
+                {{- toYaml .Values.ingest.resources | nindent 16 }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: tmp
+              emptyDir: {}
+{{- end }}

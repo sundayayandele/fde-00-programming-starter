@@ -1,0 +1,45 @@
+groups:
+  - name: fde-00-programming
+    rules:
+      - alert: ServiceDown
+        expr: up{job="fde-00-programming"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "fde-00-programming is not being scraped"
+          runbook: "docs/DEPLOYMENT.md#troubleshooting"
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(http_requests_total[5m])), 1e-9) > 0.05
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "More than 5% of requests return 5xx"
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m]))) > 1
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "p95 latency above 1 second"
+
+      - alert: IngestStale
+        expr: |
+          complaints_last_ingest_timestamp_seconds > 0
+            and time() - complaints_last_ingest_timestamp_seconds > 26 * 3600
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "No ingest run has finished for over 26 hours (the job runs daily)"
+          runbook: "docs/DEPLOYMENT.md#troubleshooting"
+
+      - alert: DatabaseUnreachable
+        expr: complaints_stored < 0
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "The report API cannot read the complaints database"
+          runbook: "docs/DEPLOYMENT.md#troubleshooting"

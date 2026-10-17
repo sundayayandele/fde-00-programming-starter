@@ -1,0 +1,24 @@
+# Managed Kubernetes (EKS, AKS, GKE) with a managed Postgres. Create the
+# fde-00-programming-db Secret (DATABASE_URL) first; see base/deployment.yaml.
+# Set the image to your registry with
+#   cd deploy/kubernetes/overlays/cloud && kustomize edit set image fde-00-programming=<registry>/fde-00-programming:<tag>
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - ingress.yaml
+images:
+  - name: fde-00-programming
+    newName: REGISTRY/fde-00-programming
+    newTag: "1.0.0"
+patches:
+  - target: {kind: Deployment, name: fde-00-programming}
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+  - target: {kind: CronJob, name: fde-00-programming-ingest}
+    patch: |-
+      - op: replace
+        path: /spec/jobTemplate/spec/template/spec/containers/0/imagePullPolicy
+        value: Always

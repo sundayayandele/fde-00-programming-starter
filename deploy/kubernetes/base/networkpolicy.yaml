@@ -1,0 +1,14 @@
+# Ingress only on the HTTP port. Egress is left open: the API reaches its database and
+# the ingest job calls the public CFPB API. fde-05 tightens egress for the air-gapped design.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fde-00-programming
+spec:
+  podSelector:
+    matchLabels:
+      app: fde-00-programming
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - {protocol: TCP, port: 8000}
