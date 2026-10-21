@@ -10,7 +10,7 @@ resources:
 images:
   - name: fde-00-programming
     newName: REGISTRY/fde-00-programming
-    newTag: "1.0.0"
+    newTag: "1.1.0"
 patches:
   - target: {kind: Deployment, name: fde-00-programming}
     patch: |-
