@@ -4,6 +4,9 @@ All notable changes. Versions follow semantic versioning; the starter repo is re
 
 ## [Unreleased]
 
+### Fixed
+- `.gitignore`: anchor `models/` to the repository root so it no longer matches source folders such as `src/*/models/`.
+
 ## [1.1.0] - 2026-10-21
 
 Repository and CI fixes; no change to the system's behaviour.

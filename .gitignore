@@ -25,7 +25,7 @@ data/*
 !data/README.md
 artifacts/*
 !artifacts/.gitkeep
-models/
+/models/
 checkpoints/
 outputs/
 mlruns/
