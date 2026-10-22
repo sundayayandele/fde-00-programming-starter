@@ -5,6 +5,8 @@
 
 # fde-00-programming: complaint-data ingestion service
 
+[![Open the starter in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/sundayayandele/fde-00-programming-starter?quickstart=1)
+
 Phase 0 (weeks 1–4) of the **Forward Deployed ML Engineer: Zero-to-Hired** series. You build the first thing a forward-deployed engineer usually builds at a customer: a dependable pipeline that gets the customer's data out of where it lives, cleans it, and makes it queryable.
 
 **The system:** a typed, tested Python package and CLI (`complaints-ingest`) that pulls consumer complaints from the US CFPB Consumer Complaint Database (public API or bulk CSV), validates, de-duplicates and PII-masks them, stores them in SQLite (local) or Postgres (Compose, Kubernetes, clouds), writes a data-quality report for every run, and serves summaries over a small FastAPI report API. It runs as a **scheduled job** plus the **report API** on Docker Desktop, Podman Desktop, Rancher Desktop, local Kubernetes, OpenShift, AWS, Azure and GCP.
