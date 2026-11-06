@@ -1,7 +1,8 @@
 > **Learner starter.** This repo is generated from the reference solution.
 > Work through `labs/` week by week and replace each `TODO` until `make exercises` is green
 > (`make test` stays green throughout).
-> Do not open the reference repo until you have tried each exercise yourself.
+> The reference solution unlocks on [itlearning.tech](https://itlearning.tech) once you have passed
+> this phase's exit check or capstone.
 
 # fde-00-programming: complaint-data ingestion service
 
@@ -106,7 +107,7 @@ monitoring/               Prometheus scrape config, alerts (incl. stale ingest),
 
 ## Reference and starter
 
-[`fde-00-programming`](https://github.com/sundayayandele/fde-00-programming) is the **reference** repo: complete code and measured results. [`fde-00-programming-starter`](https://github.com/sundayayandele/fde-00-programming-starter) is generated from it with `make starter` for learners: each exercise becomes a `NotImplementedError("TODO ...")` stub, exercise tests are marked `@pytest.mark.exercise` (run them with `make exercises`), and the results table is blanked for you to fill in with your own numbers.
+`fde-00-programming` is the **reference** repo (private: learners download it from the course on [itlearning.tech](https://itlearning.tech) after passing this phase's exit check or capstone): complete code and measured results. [`fde-00-programming-starter`](https://github.com/sundayayandele/fde-00-programming-starter) is generated from it with `make starter` for learners: each exercise becomes a `NotImplementedError("TODO ...")` stub, exercise tests are marked `@pytest.mark.exercise` (run them with `make exercises`), and the results table is blanked for you to fill in with your own numbers.
 
 ## Licence
 
